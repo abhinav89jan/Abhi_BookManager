@@ -18,10 +18,13 @@ jobs:
           dotnet-version: 9.x
       - name: 📦 Restore Dependencies
         run: dotnet restore ./Abhi_BookManager/Abhi_BookManager.csproj
+
       - name: 🏗️ Build Project
         run: dotnet build ./Abhi_BookManager/Abhi_BookManager.csproj --no-restore
+
       - name: ✅ Run Tests
         run: dotnet test ./Abhi_BookManager/Abhi_BookManager.csproj --no-build --verbosity normal
+
   publish:
     needs: build
     if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -46,7 +49,63 @@ jobs:
         run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.REPOSITORY }}
 
       - name: 📦 Publish Docker Image to Amazon ECR
-        working-directory: ./abhi-bookmanager/
         run: |
           dotnet publish -c Release -p:ContainerRepository=${{ secrets.REPOSITORY }} -p:RuntimeIdentifier=linux-x64
           docker push ${{ secrets.REPOSITORY }} --all-tags
+
+# name: Deploy
+
+# on:
+#   workflow_dispatch:
+#   push:
+#     branches:
+#       - main
+
+# jobs:
+#   build-and-deploy:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       # Step 1: Checkout the repository
+#       - name: 🛠️ Checkout Repository
+#         uses: actions/checkout@v4
+
+#       # Step 2: Setup .NET SDK
+#       - name: ⚙️ Setup .NET 9 SDK
+#         uses: actions/setup-dotnet@v4
+#         with:
+#           dotnet-version: '9.x'
+
+#       # Step 3: Restore dependencies
+#       - name: 📦 Restore Dependencies
+#         run: dotnet restore ./Abhi_BookManager/Abhi_BookManager.csproj
+
+#       # Step 4: Build the project
+#       - name: 🏗️ Build Project
+#         run: dotnet build ./Abhi_BookManager/Abhi_BookManager.csproj --no-restore
+
+#       # Step 5: Run tests (if any)
+#       - name: ✅ Run Tests
+#         run: dotnet test ./Abhi_BookManager/Abhi_BookManager.csproj --no-build --verbosity normal
+
+#       # Step 6: Publish the project
+#       - name: 📦 Publish Project
+#         run: dotnet publish ./Abhi_BookManager/Abhi_BookManager.csproj -c Release -o ./publish
+
+#       # Step 7: Configure AWS credentials
+#       - name: 🔐 Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: us-east-1
+
+#       # Step 8: Login to Amazon ECR
+#       - name: 🔑 Login to Amazon ECR
+#         run: aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${{ secrets.REPOSITORY }}
+
+#       # Step 9: Build and push Docker image
+#       - name: 📦 Build and Push Docker Image
+#         run: |
+#           dotnet publish -c Release -p:ContainerRepository=${{ secrets.REPOSITORY }} -p:RuntimeIdentifier=linux-x64
+#           docker push ${{ secrets.REPOSITORY }} --all-tags
