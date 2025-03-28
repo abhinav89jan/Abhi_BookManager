@@ -6,6 +6,9 @@ on:
     branches:
       - main
 
+env:
+  Image-Name: 931203336168.dkr.ecr.us-east-1.amazonaws.com/practice-githubactions-k8;
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -50,8 +53,9 @@ jobs:
 
       - name: 📦 Publish Docker Image to Amazon ECR
         run: |
-          dotnet publish -c Release -p:ContainerRepository=${{ secrets.REPOSITORY }} -p:RuntimeIdentifier=linux-x64
-          docker push ${{ secrets.REPOSITORY }} --all-tags
+          docker build -f Dockerfile --tag ${secrets.REPOSITORY}:${CI_COMMIT_SHORT_SHA}
+          # dotnet publish -c Release -p:ContainerRepository=${{ secrets.REPOSITORY }} -p:RuntimeIdentifier=linux-x64
+          docker push ${env.Image-Name}:${CI_COMMIT_SHORT_SHA}
 
 # name: Deploy
 
@@ -60,7 +64,6 @@ jobs:
 #   push:
 #     branches:
 #       - main
-# 
 
 # jobs:
 #   build-and-deploy:
